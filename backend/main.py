@@ -23,29 +23,53 @@ class Lead(BaseModel):
 
 @app.post("/lead")
 def capture_lead(lead: Lead):
-    ai_message = get_ai_response(
-        lead.name,
-        lead.business,
-        lead.challenge
-    )
+    try:
+        ai_message = get_ai_response(
+            lead.name,
+            lead.business,
+            lead.challenge
+        )
+    except Exception as e:
+        return {
+            "status": "error",
+            "stage": "ai",
+            "message": str(e)
+        }
 
-    save_lead(
-        lead.name,
-        lead.email,
-        lead.business,
-        lead.challenge
-    )
+    try:
+        save_lead(
+            lead.name,
+            lead.email,
+            lead.business,
+            lead.challenge
+        )
+    except Exception as e:
+        return {
+            "status": "error",
+            "stage": "sheets",
+            "message": str(e),
+            "ai_message": ai_message
+        }
 
-    send_email(
-        lead.email,
-        lead.name,
-        ai_message
-    )
+    try:
+        send_email(
+            lead.email,
+            lead.name,
+            ai_message
+        )
+    except Exception as e:
+        return {
+            "status": "error",
+            "stage": "email",
+            "message": str(e),
+            "ai_message": ai_message
+        }
 
     return {
         "status": "success",
         "message": ai_message
     }
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
