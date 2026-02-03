@@ -1,27 +1,41 @@
+import os
+import json
 import gspread
-import os, json
 from oauth2client.service_account import ServiceAccountCredentials
-from datetime import datetime
 
-def save_lead(name, email, business, challenge):
+def _load_google_creds():
+    raw = os.getenv("GOOGLE_CREDENTIALS")
+
+    if not raw:
+        raise RuntimeError("GOOGLE_CREDENTIALS not set")
+
+    # If Railway mounted it as a file
+    if os.path.exists(raw):
+        with open(raw, "r") as f:
+            return json.load(f)
+
+    # Otherwise assume it's raw JSON text
+    return json.loads(raw)
+
+def save_lead(name, email, business, challenge, ai_response):
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds_dict = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        "credentials.json", scope
+    creds_dict = _load_google_creds()
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(
+        creds_dict,
+        scope
     )
 
     client = gspread.authorize(creds)
     sheet = client.open("AI_LeADS").sheet1
 
     sheet.append_row([
-        str(datetime.now()),
         name,
         email,
         business,
         challenge,
-        "Local AI Bot"
+        ai_response
     ])
