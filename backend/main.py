@@ -46,3 +46,7 @@ def capture_lead(lead: Lead):
         "status": "success",
         "message": ai_message
     }
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
