@@ -1,5 +1,5 @@
 # Secrets
-.env
+backend/.env
 backend/credentials.json
 
 # Python
