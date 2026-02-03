@@ -3,39 +3,55 @@ import requests
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-def get_ai_response(name, business, challenge):
-    if not GROQ_API_KEY:
-        raise RuntimeError("GROQ_API_KEY missing in environment variables")
+BASE_URL = "https://api.groq.com/openai/v1"
 
-    prompt = f"""
-You are an AI growth consultant helping startups.
+HEADERS = {
+    "Authorization": f"Bearer {GROQ_API_KEY}",
+    "Content-Type": "application/json",
+    "User-Agent": "ai-growth-system/1.0"
+}
 
-Client name: {name}
-Business type: {business}
-Growth challenge: {challenge}
+def _get_active_model():
+    url = f"{BASE_URL}/models"
+    r = requests.get(url, headers=HEADERS, timeout=30)
 
-Give a short, actionable growth plan in 5 bullet points.
-"""
+    if r.status_code != 200:
+        raise RuntimeError(f"Failed to fetch Groq models: {r.text}")
 
+    models = r.json().get("data", [])
+
+    if not models:
+        raise RuntimeError("No active Groq models available")
+
+    # Prefer chat-capable models with large context
+    for m in models:
+        name = m.get("id", "")
+        if "it" in name or "chat" in name or "instruct" in name:
+            return name
+
+    return models[0]["id"]
+
+
+def _groq(prompt):
     url = "https://api.groq.com/openai/v1/chat/completions"
 
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-        "User-Agent": "ai-growth-system/1.0"
+        "Content-Type": "application/json"
     }
 
     payload = {
-        "model": "llama3-8b-8192",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.3
+        "temperature": 0.7
     }
 
-    response = requests.post(url, headers=headers, json=payload, timeout=60)
+    r = requests.post(url, headers=headers, json=payload, timeout=60)
+    r.raise_for_status()
 
-    if response.status_code != 200:
-        raise RuntimeError(f"Groq error {response.status_code}: {response.text}")
+    return r.json()["choices"][0]["message"]["content"]
 
-    return response.json()["choices"][0]["message"]["content"]
+
+
