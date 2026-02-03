@@ -42,7 +42,7 @@ def capture_lead(lead: Lead):
             lead.email,
             lead.business,
             lead.challenge,
-            ai_message
+            ai_response=ai_message
         )
     except Exception as e:
         return {
