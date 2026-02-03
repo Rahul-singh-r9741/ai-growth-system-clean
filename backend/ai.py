@@ -8,21 +8,30 @@ def _groq(prompt):
 
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Accept": "application/json"
     }
 
     payload = {
-        "model": "llama3-70b-8192",
+        "model": "llama3-8b-8192",
         "messages": [
-            {"role": "system", "content": "You are an AI growth consultant for startups."},
-            {"role": "user", "content": prompt}
+            {
+                "role": "user",
+                "content": prompt
+            }
         ],
-        "temperature": 0.4
+        "temperature": 0.4,
+        "max_tokens": 300
     }
 
     r = requests.post(url, headers=headers, json=payload, timeout=120)
-    r.raise_for_status()
+
+    # Debug help if Groq returns an error
+    if r.status_code != 200:
+        raise RuntimeError(f"Groq API error {r.status_code}: {r.text}")
+
     return r.json()["choices"][0]["message"]["content"]
+
 
 def get_ai_response(name, business, challenge):
     if not GROQ_API_KEY:
