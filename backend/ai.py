@@ -35,6 +35,9 @@ def _groq(prompt):
     return r.json()["choices"][0]["message"]["content"]
 
 def get_ai_response(name, business, challenge):
+    if not GROQ_API_KEY:
+        raise RuntimeError("GROQ_API_KEY is missing in production environment")
+
     prompt = f"""
 Client name: {name}
 Business type: {business}
@@ -42,11 +45,4 @@ Growth challenge: {challenge}
 
 Give a short, actionable growth plan in 5 bullet points.
 """
-
-    # Prefer cloud in production
-    if GROQ_API_KEY:
-        return _groq(prompt)
-
-    # Fallback to local Ollama
-    return _ollama(prompt)
-
+    return _groq(prompt)
