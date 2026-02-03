@@ -1,21 +1,11 @@
 import os
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
-def _ollama(prompt):
-    payload = {
-        "model": "mistral",
-        "prompt": prompt,
-        "stream": False
-    }
-    r = requests.post(OLLAMA_URL, json=payload, timeout=120)
-    r.raise_for_status()
-    return r.json().get("response")
 
 def _groq(prompt):
     url = "https://api.groq.com/openai/v1/chat/completions"
+
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
@@ -36,7 +26,7 @@ def _groq(prompt):
 
 def get_ai_response(name, business, challenge):
     if not GROQ_API_KEY:
-        raise RuntimeError("GROQ_API_KEY is missing in production environment")
+        raise RuntimeError("GROQ_API_KEY is missing in environment")
 
     prompt = f"""
 Client name: {name}
