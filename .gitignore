@@ -13,3 +13,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+echo __pycache__/ >> .gitignore
+echo *.pyc >> .gitignore

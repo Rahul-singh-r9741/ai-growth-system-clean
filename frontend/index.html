@@ -1,114 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>AI Growth System — Rahul Singh</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Basic SEO -->
-  <meta name="description" content="AI-powered lead generation and growth automation system for startups using FastAPI and local LLMs." />
-  <meta name="keywords" content="AI lead generation, startup growth automation, CRM chatbot, FastAPI AI" />
-
+  <title>AI Lead Capture Agent</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       background: #0f172a;
-      color: #e5e7eb;
+      color: white;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      min-height: 100vh;
+      overflow-y: auto;
     }
-
     .card {
       background: #020617;
-      padding: 30px;
+      padding: 20px;
       border-radius: 10px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 350px;
+      box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
     }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #38bdf8;
-    }
-
-    input, textarea {
+    input, textarea, button {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
+      margin-top: 10px;
+      padding: 8px;
       border-radius: 5px;
       border: none;
-      font-size: 14px;
     }
-
     button {
-      width: 100%;
-      padding: 12px;
       background: #38bdf8;
-      color: #020617;
-      font-weight: bold;
-      border: none;
-      border-radius: 5px;
       cursor: pointer;
+      font-weight: bold;
     }
-
     button:hover {
       background: #0ea5e9;
-    }
-
-    .response {
-      margin-top: 15px;
-      font-size: 14px;
-      background: #020617;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #1e293b;
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>AI Growth Assistant</h2>
+    <h2>AI Lead Agent</h2>
+    <input id="name" placeholder="Name" />
+    <input id="email" placeholder="Email" />
+    <input id="business" placeholder="Business" />
+    <textarea id="challenge" placeholder="Challenge"></textarea>
+    <button onclick="sendLead()">Submit</button>
+    <p id="status"></p>
+    <pre id="aiResponse" style="
+    margin-top:10px;
+    background:#020617;
+    padding:10px;
+    border-radius:5px;
+    white-space:pre-wrap;
+    "></pre>
 
-    <input id="name" placeholder="Your Name" />
-    <input id="email" placeholder="Your Email" />
-    <input id="business" placeholder="Business Type (e.g. SaaS, Agency)" />
-    <textarea id="challenge" placeholder="Your Growth Challenge"></textarea>
-
-    <button onclick="sendLead()">Get AI Growth Plan</button>
-
-    <div id="response" class="response"></div>
   </div>
 
   <script>
     async function sendLead() {
-      const data = {
+      const lead = {
         name: document.getElementById("name").value,
         email: document.getElementById("email").value,
         business: document.getElementById("business").value,
         challenge: document.getElementById("challenge").value
       };
 
-      document.getElementById("response").innerText = "Thinking...";
+      const status = document.getElementById("status");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/lead", {
+        const response = await fetch("http://127.0.0.1:8000/lead", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(lead)
         });
 
-        const result = await res.json();
-        document.getElementById("response").innerText = result.message;
+        const data = await response.json();
+
+        status.innerText = "Lead saved successfully";
+
+        const aiBox = document.getElementById("aiResponse");
+        aiBox.innerText = data.ai_message || "No AI response received.";
+
+
       } catch (err) {
-        document.getElementById("response").innerText =
-          "Could not connect to AI server. Make sure FastAPI is running.";
+        console.error(err);
+        status.innerText = "Offline mode: Lead saved locally";
+        saveOffline(lead);
       }
+    }
+
+    function saveOffline(lead) {
+      let leads = JSON.parse(localStorage.getItem("offlineLeads") || "[]");
+      leads.push(lead);
+      localStorage.setItem("offlineLeads", JSON.stringify(leads));
     }
   </script>
 </body>
 </html>
+
