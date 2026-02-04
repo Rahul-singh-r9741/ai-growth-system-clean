@@ -9,9 +9,18 @@ from fastapi import FastAPI
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
+    app.add_middleware(
+    CORSMiddleware,
     allow_origins=[
-  "ai-growth-system-clean-production.up.railway.app"
-]
+        "https://ai-growth-system-clean-production.up.railway.app",
+        "http://127.0.0.1:5500",
+        "http://localhost:5500"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 ,  # Allow all for development
     allow_credentials=True,
     allow_methods=["*"],
