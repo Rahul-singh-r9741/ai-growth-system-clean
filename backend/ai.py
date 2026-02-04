@@ -9,8 +9,6 @@ from fastapi import FastAPI
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    app.add_middleware(
-    CORSMiddleware,
     allow_origins=[
         "https://ai-growth-system-clean-production.up.railway.app",
         "http://127.0.0.1:5500",
@@ -20,13 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-,  # Allow all for development
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
